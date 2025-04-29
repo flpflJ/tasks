@@ -1,55 +1,56 @@
-- name: Docker task
-  hosts: web
-    #become: true
-    #become_user: wakey
-  tasks:
+- name: Updating apt && Installing packages
+  become: true
+  apt:
+     update_cache: yes
+     pkg:
+        - ca-certificates
+        - curl
+     cache_valid_time: 86400
+- name: 0755 on keyrings
+  become: true
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
 
-   - name: Updating apt && Installing packages
-     become: true
-     apt:
-        update_cache: yes
-        pkg:
-          - ca-certificates
-          - curl
-        cache_valid_time: 86400
-   - name: 0755 on keyrings
-     become: true
-     file:
-       path: /etc/apt/keyrings
-       state: directory
-       mode: "0755"
+- name: APT + adding repo
+  become: true
+  block:
+  - name: Add an APT signing key
+    get_url:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      dest: /etc/apt/keyrings/docker.asc
+  - name: adding repo
+    apt_repository:
+      repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+- name: installing docker-ce
+  become: true
+  apt:
+    update_cache: yes
+    pkg:
+     - docker-ce
+     - docker-ce-cli
+     - containerd.io
+     - docker-buildx-plugin
+     - docker-compose-plugin
 
-   - name: APT + adding repo
-     become: true
-     block:
-      - name: Add an APT signing key
-        apt_key:
-          url: https://download.docker.com/linux/ubuntu/gpg
-      - name: adding repo
-        apt_repository:
-          repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
-   - name: installing docker-ce
-     become: true
-     apt:
-      update_cache: yes
-      pkg:
-       - docker-ce
-       - docker-ce-cli
-       - containerd.io
-       - docker-buildx-plugin
-       - docker-compose-plugin
+- name: executing without sudo
+  become: true
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
 
-   - name: executing without sudo
-     become: true
-     user:
-      name: "{{ ansible_user }}"
-      groups: docker
-      append: yes
+- name: affecting changes
+  meta: reset_connection
 
-   - name: checking docker, register message
-     shell: docker run hello-world
-     register: docker_output
+- name: checking docker, register message
+  shell: docker run hello-world
+  register: docker_output
 
-   - name: Print message from docker
-     ansible.builtin.debug:
-      msg: "{{ docker_output.stdout }}"
+- name: Print message from docker
+  debug:
+    msg: "{{ docker_output.stdout }}"
+
+- name: executing docker stop
+  shell: docker stop $(docker ps -aq)

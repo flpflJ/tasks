@@ -1,0 +1,25 @@
+---
+- name: Install nginx
+  become: true
+  apt:
+    name: nginx
+    update_cache: yes
+    cache_valid_time: 86400
+- name: Deleting default site
+  become: true
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+- name: Balancer configurator
+  become: true
+  template:
+    src: nginx_balancer.conf.j2
+    dest: /etc/nginx/sites-available/balancer.conf
+  notify: Restart nginx 
+- name: Enable balancer
+  become: true
+  file:
+    src: /etc/nginx/sites-available/balancer.conf
+    dest: /etc/nginx/sites-enabled/balancer.conf
+    state: link
+  notify: Restart nginx

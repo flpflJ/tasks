@@ -1,0 +1,5 @@
+srv_name: "localhost"
+nginx_port: "80"
+balance_alg: "least_conn"
+port_list: [8001,8002,8003]
+ip_addr: "127.0.0.1"

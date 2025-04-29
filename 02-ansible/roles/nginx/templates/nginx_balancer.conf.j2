@@ -1,0 +1,18 @@
+upstream backend {
+	{{ balance_alg }};
+	{% for item in port_list %}
+	server {{ ip_addr }}:{{ item }};
+	{% endfor %}
+}
+
+server {
+	listen {{ nginx_port }};
+	server_name {{ srv_name }};
+	location / {
+		proxy_pass http://backend;
+		proxy_set_header Host $host;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $remote_addr;
+	}
+}
+

@@ -1,0 +1,26 @@
+- name: Starting Docker Service
+  service:
+       name: docker
+       state: started
+
+- name: Log in to docker
+  docker_login:
+       username: "{{ var_usr }}"
+       password: "{{ var_passwd }}"  
+
+- name: Pulling image
+  community.docker.docker_image_pull:
+       name: "{{ var_img }}"
+       tag: latest
+
+- name: Starting 3 containers
+  docker_container:
+    name: "web-{{ item }}"
+    recreate: true
+    image: "{{ var_img }}"
+    ports:
+      - "800{{ item }}:8000"
+    env:
+      AUTHOR: "{{ var_env }}"
+  with_sequence: count=3
+
