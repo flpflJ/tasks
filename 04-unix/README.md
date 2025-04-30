@@ -4,6 +4,6 @@
  `echo > /etc/resolv.conf`
 ## Способ №2
  Способ заключается в том, что мы меняем nsswitch.conf, ломая список источников служб доменных имен.
-```
+`
 echo "hosts: files" > /etc/nsswitch.conf
- 
+` 
