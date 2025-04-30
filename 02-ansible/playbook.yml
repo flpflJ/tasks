@@ -1,5 +1,6 @@
 ---
-- hosts: web
+- name: Docker + 3x API start + nginx with balancer
+  hosts: web
   roles:
     - docker
     - web

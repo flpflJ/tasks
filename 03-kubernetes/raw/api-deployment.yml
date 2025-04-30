@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-echo-server
+  namespace: cloud
+  labels:
+    app: cloud-echo-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cloud-echo-server
+  template:
+    metadata:
+      labels:
+        app: cloud-echo-server
+    spec:
+      containers:
+      - name: cloud-echo-server
+        image: flpfl/cloud_echo_server:latest
+        ports:
+        - containerPort: 8000
+          name: api-port
+        env:
+        - name: AUTHOR
+          value: "Hello Again, Vsevolod!"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: api-port
+          initialDelaySeconds: 5
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: api-port
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      imagePullSecrets:
+      - name: dockerkey

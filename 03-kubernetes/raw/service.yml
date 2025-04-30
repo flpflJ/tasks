@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-echo-service
+  namespace: cloud
+  labels:
+    app: cloud-echo-server
+spec:
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: api-port
+  selector:
+    app: cloud-echo-server
